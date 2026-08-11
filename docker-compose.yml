@@ -1,0 +1,134 @@
+services:
+
+  # ── USER SERVICE ────────────────────────────────────────────────────────
+  user-db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: userdb
+    ports:
+      - "5433:5432"
+    volumes:
+      - user_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  user-service:
+    build: ./user-service
+    ports:
+      - "8001:8001"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@user-db:5432/userdb
+      JWT_SECRET_KEY: dev-secret-change-in-production
+    depends_on:
+      user-db:
+        condition: service_healthy
+
+  # ── PRODUCT SERVICE ─────────────────────────────────────────────────────
+  product-db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: productdb
+    ports:
+      - "5434:5432"
+    volumes:
+      - product_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  product-service:
+    build: ./product-service
+    ports:
+      - "8002:8002"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@product-db:5432/productdb
+      JWT_SECRET_KEY: dev-secret-change-in-production
+    depends_on:
+      product-db:
+        condition: service_healthy
+
+  # ── INVENTORY SERVICE ────────────────────────────────────────────────────
+  inventory-db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: inventorydb
+    ports:
+      - "5435:5432"
+    volumes:
+      - inventory_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  inventory-service:
+    build: ./inventory-service
+    ports:
+      - "8003:8003"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@inventory-db:5432/inventorydb
+      JWT_SECRET_KEY: dev-secret-change-in-production
+    depends_on:
+      inventory-db:
+        condition: service_healthy
+
+  # ── ORDER SERVICE ────────────────────────────────────────────────────────
+  order-db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: orderdb
+    ports:
+      - "5436:5432"
+    volumes:
+      - order_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  order-service:
+    build: ./order-service
+    ports:
+      - "8004:8004"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@order-db:5432/orderdb
+      JWT_SECRET_KEY: dev-secret-change-in-production
+      INVENTORY_SERVICE_URL: http://inventory-service:8003
+      PRODUCT_SERVICE_URL: http://product-service:8002
+    depends_on:
+      order-db:
+        condition: service_healthy
+      inventory-service:
+        condition: service_started
+      product-service:
+        condition: service_started
+
+  # ── NOTIFICATION SERVICE ─────────────────────────────────────────────────
+  # No database container - uses an in-memory store locally, DynamoDB on AWS.
+  notification-service:
+    build: ./notification-service
+    ports:
+      - "8005:8005"
+    environment:
+      JWT_SECRET_KEY: dev-secret-change-in-production
+
+volumes:
+  user_db_data:
+  product_db_data:
+  inventory_db_data:
+  order_db_data:
