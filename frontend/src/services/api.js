@@ -111,3 +111,50 @@ export async function markNotificationRead(notificationId) {
   )
   return data
 }
+
+// ---------- Admin ----------
+
+export async function getAllUsers() {
+  const { data } = await userApi.get('/api/v1/users/all')
+  return data
+}
+
+export async function updateOrderStatus(orderId, status) {
+  const { data } = await orderApi.put(`/api/v1/orders/${orderId}/status`, { status })
+  return data
+}
+
+export async function getAllOrders() {
+  const { data } = await orderApi.get('/api/v1/orders/all')
+  return data
+}
+
+export async function updateInventory(productId, quantity) {
+  const { data } = await inventoryApi.put(`/api/v1/inventory/${productId}`, { quantity })
+  return data
+}
+
+export async function deleteProduct(productId) {
+  const { data } = await productApi.delete(`/api/v1/products/${productId}`)
+  return data
+}
+
+export async function updateProduct(productId, productData) {
+  const { data } = await productApi.put(`/api/v1/products/${productId}`, productData)
+  return data
+}
+
+export async function createProduct(productData) {
+  const { data } = await productApi.post('/api/v1/products', productData)
+  return data
+}
+
+export async function getLowStock() {
+  const { data } = await inventoryApi.get('/api/v1/inventory/low-stock')
+  return data
+}
+
+export async function createInventory(inventoryData) {
+  const { data } = await inventoryApi.post('/api/v1/inventory', inventoryData)
+  return data
+}

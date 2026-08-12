@@ -28,7 +28,7 @@ function MenuIcon() {
 }
 
 export default function Navbar() {
-  const { isAuthenticated, user, logout } = useAuth()
+  const { isAuthenticated, user, isAdmin, logout } = useAuth()
   const { cartCount } = useCart()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -110,6 +110,15 @@ export default function Navbar() {
                   >
                     My Orders
                   </Link>
+                  {isAdmin && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="block px-4 py-2 text-sm text-[#1D1D1F] hover:bg-[#F5F5F7]"
+                    >
+                      Admin Panel
+                    </Link>
+                  )}
                   <button
                     onClick={handleLogout}
                     className="block w-full px-4 py-2 text-left text-sm text-[#1D1D1F] hover:bg-[#F5F5F7]"
@@ -168,6 +177,11 @@ export default function Navbar() {
               <Link to="/orders" onClick={() => setMobileOpen(false)} className="block text-sm text-[#6E6E73]">
                 My Orders
               </Link>
+              {isAdmin && (
+                <Link to="/admin" onClick={() => setMobileOpen(false)} className="block text-sm text-[#6E6E73]">
+                  Admin Panel
+                </Link>
+              )}
               <button
                 onClick={() => {
                   handleLogout()
