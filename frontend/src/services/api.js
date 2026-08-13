@@ -125,7 +125,7 @@ export async function updateOrderStatus(orderId, status) {
 }
 
 export async function getAllOrders() {
-  const { data } = await orderApi.get('/api/v1/orders/all')
+  const { data } = await orderApi.get('/api/v1/orders')
   return data
 }
 

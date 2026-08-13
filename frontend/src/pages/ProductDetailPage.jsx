@@ -6,12 +6,17 @@ import { useCart } from '../context/CartContext'
 const PLACEHOLDER_IMAGE =
   'data:image/svg+xml;utf8,' +
   encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 500 500"><rect width="500" height="500" fill="#F5F5F7"/><path d="M150 320l60-75 50 55 75-100 90 120H150z" fill="#D2D2D7"/><circle cx="185" cy="185" r="38" fill="#D2D2D7"/></svg>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 500 500"><rect width="500" height="500" fill="#F5F5F7"/><path d="M150 320l60-75 50 55 75-100 90 120H150z" fill="#D2D2D7"/><circle cx="185" cy="185" r="38" fill="#D2D2D7"/></svg>`
   )
 
 function stockStatus(quantity) {
-  if (quantity <= 0) return { label: 'Out of Stock', className: 'bg-[#FF3B30]/10 text-[#FF3B30]' }
-  if (quantity <= 5) return { label: 'Low Stock', className: 'bg-[#FF6B00]/10 text-[#FF6B00]' }
+  if (quantity <= 0)
+    return {
+      label: 'Out of Stock',
+      className: 'bg-[#FF3B30]/10 text-[#FF3B30]',
+    }
+  if (quantity <= 5)
+    return { label: 'Low Stock', className: 'bg-[#FF6B00]/10 text-[#FF6B00]' }
   return { label: 'In Stock', className: 'bg-[#1D7A1D]/10 text-[#1D7A1D]' }
 }
 
@@ -33,23 +38,25 @@ export default function ProductDetailPage() {
     setIsLoading(true)
     setError('')
 
-    Promise.all([getProduct(id), getInventory(id)])
-      .then(([productData, inventoryData]) => {
+    getProduct(id)
+      .then((productData) => {
         if (cancelled) return
         setProduct(productData)
+        // fetch inventory separately so product still shows if inventory missing
+        return getInventory(id).catch(() => ({ quantity: 0, stock: 0 }))
+      })
+      .then((inventoryData) => {
+        if (cancelled || !inventoryData) return
         setStock(inventoryData?.quantity ?? inventoryData?.stock ?? 0)
         setQuantity(1)
       })
       .catch(() => {
-        if (!cancelled) setError('Unable to load this product. Please try again later.')
+        if (!cancelled)
+          setError('Unable to load this product. Please try again later.')
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false)
       })
-
-    return () => {
-      cancelled = true
-    }
   }, [id])
 
   if (isLoading) {
@@ -72,8 +79,13 @@ export default function ProductDetailPage() {
   if (error || !product) {
     return (
       <div className="mx-auto max-w-[1200px] px-12 py-20 text-center">
-        <p className="text-lg font-medium text-[#1D1D1F]">{error || 'Product not found.'}</p>
-        <Link to="/" className="mt-4 inline-block text-[#0071E3] hover:underline">
+        <p className="text-lg font-medium text-[#1D1D1F]">
+          {error || 'Product not found.'}
+        </p>
+        <Link
+          to="/"
+          className="mt-4 inline-block text-[#0071E3] hover:underline"
+        >
           &larr; Back to products
         </Link>
       </div>
@@ -86,7 +98,10 @@ export default function ProductDetailPage() {
 
   return (
     <div className="mx-auto max-w-[1200px] px-12 py-20">
-      <Link to="/" className="mb-8 inline-block text-sm font-medium text-[#0071E3] hover:underline">
+      <Link
+        to="/"
+        className="mb-8 inline-block text-sm font-medium text-[#0071E3] hover:underline"
+      >
         &larr; Back to products
       </Link>
 
@@ -127,9 +142,15 @@ export default function ProductDetailPage() {
               {product.category}
             </span>
           )}
-          <h1 className="text-[40px] font-bold leading-[1.1] text-[#1D1D1F]">{product.name}</h1>
-          <p className="my-4 text-[28px] font-bold text-[#1D1D1F]">${Number(product.price).toFixed(2)}</p>
-          <span className={`mb-4 inline-block rounded-full px-3 py-1 text-xs font-medium ${status.className}`}>
+          <h1 className="text-[40px] font-bold leading-[1.1] text-[#1D1D1F]">
+            {product.name}
+          </h1>
+          <p className="my-4 text-[28px] font-bold text-[#1D1D1F]">
+            ${Number(product.price).toFixed(2)}
+          </p>
+          <span
+            className={`mb-4 inline-block rounded-full px-3 py-1 text-xs font-medium ${status.className}`}
+          >
             {status.label}
           </span>
           <p className="my-6 leading-[1.6] text-[#6E6E73]">
@@ -138,7 +159,9 @@ export default function ProductDetailPage() {
 
           {!outOfStock && (
             <div className="mb-6 flex items-center gap-3">
-              <label className="text-sm font-medium text-[#1D1D1F]">Quantity</label>
+              <label className="text-sm font-medium text-[#1D1D1F]">
+                Quantity
+              </label>
               <div className="flex items-center rounded-lg border border-[#D2D2D7]">
                 <button
                   type="button"
@@ -147,7 +170,9 @@ export default function ProductDetailPage() {
                 >
                   &minus;
                 </button>
-                <span className="w-10 text-center text-sm font-medium text-[#1D1D1F]">{quantity}</span>
+                <span className="w-10 text-center text-sm font-medium text-[#1D1D1F]">
+                  {quantity}
+                </span>
                 <button
                   type="button"
                   onClick={() => setQuantity((q) => Math.min(stock, q + 1))}
@@ -167,7 +192,9 @@ export default function ProductDetailPage() {
               setTimeout(() => setAdded(false), 2000)
             }}
             className={`h-[52px] w-full rounded-xl text-[17px] font-semibold text-white transition ${
-              outOfStock ? 'cursor-not-allowed bg-[#D2D2D7]' : 'bg-[#0071E3] hover:bg-[#0077ED]'
+              outOfStock
+                ? 'cursor-not-allowed bg-[#D2D2D7]'
+                : 'bg-[#0071E3] hover:bg-[#0077ED]'
             }`}
           >
             {outOfStock ? 'Out of Stock' : 'Add to Cart'}
@@ -180,7 +207,11 @@ export default function ProductDetailPage() {
             {wishlisted ? 'Added to Wishlist' : 'Add to Wishlist'}
           </button>
 
-          {added && <p className="mt-3 text-sm font-medium text-[#1D7A1D]">Added to cart!</p>}
+          {added && (
+            <p className="mt-3 text-sm font-medium text-[#1D7A1D]">
+              Added to cart!
+            </p>
+          )}
         </div>
       </div>
     </div>

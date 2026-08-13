@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { createOrder } from '../services/api'
+import Spinner from '../components/Spinner'
 
 const PLACEHOLDER_IMAGE =
   'data:image/svg+xml;utf8,' +
@@ -26,44 +27,208 @@ function CartEmptyIcon() {
   )
 }
 
+function CheckIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="h-8 w-8 text-[#1D7A1D]">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+    </svg>
+  )
+}
+
+function CloseIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  )
+}
+
+function PaymentModal({ items, total, isProcessing, error, successOrder, onClose, onPayNow, onViewOrders }) {
+  const [cardNumber, setCardNumber] = useState('')
+  const [expiry, setExpiry] = useState('')
+  const [cvv, setCvv] = useState('')
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    onPayNow()
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-[0_16px_48px_rgba(0,0,0,0.24)]">
+        {successOrder ? (
+          <div className="py-2 text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#1D7A1D]/10">
+              <CheckIcon />
+            </div>
+            <h2 className="mt-4 text-xl font-bold text-[#1D1D1F]">Payment Successful!</h2>
+            <p className="mt-2 text-sm text-[#6E6E73]">Order #{successOrder.id}</p>
+            <p className="mt-1 text-2xl font-bold text-[#1D1D1F]">
+              ${Number(successOrder.total_amount ?? total).toFixed(2)}
+            </p>
+            <button
+              onClick={onViewOrders}
+              className="mt-6 h-[52px] w-full rounded-xl bg-[#0071E3] text-[16px] font-semibold text-white transition hover:bg-[#0077ED]"
+            >
+              View My Orders
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-[#1D1D1F]">Payment</h2>
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={isProcessing}
+                className="text-[#6E6E73] transition hover:text-[#1D1D1F] disabled:opacity-40"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+
+            <div className="mt-4 rounded-xl bg-[#F5F5F7] p-4">
+              <h3 className="mb-2 text-sm font-semibold text-[#1D1D1F]">Order Summary</h3>
+              <div className="max-h-32 space-y-1 overflow-y-auto">
+                {items.map((item) => (
+                  <div key={item.product_id} className="flex justify-between text-sm text-[#6E6E73]">
+                    <span>
+                      {item.product_name} &times; {item.quantity}
+                    </span>
+                    <span>${(item.unit_price * item.quantity).toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-2 flex justify-between border-t border-[#E8E8ED] pt-2 text-sm font-bold text-[#1D1D1F]">
+                <span>Total</span>
+                <span>${total.toFixed(2)}</span>
+              </div>
+            </div>
+
+            {error && (
+              <div className="mt-4 rounded-lg bg-[#FF3B30]/10 px-4 py-3 text-sm text-[#FF3B30]">{error}</div>
+            )}
+
+            <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-[#1D1D1F]">Card Number</label>
+                <input
+                  type="text"
+                  required
+                  inputMode="numeric"
+                  placeholder="4242 4242 4242 4242"
+                  maxLength={19}
+                  value={cardNumber}
+                  onChange={(e) => setCardNumber(e.target.value)}
+                  className="w-full rounded-lg border border-[#D2D2D7] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0071E3]/40"
+                />
+              </div>
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="mb-1 block text-sm font-medium text-[#1D1D1F]">Expiry</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="MM/YY"
+                    maxLength={5}
+                    value={expiry}
+                    onChange={(e) => setExpiry(e.target.value)}
+                    className="w-full rounded-lg border border-[#D2D2D7] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0071E3]/40"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="mb-1 block text-sm font-medium text-[#1D1D1F]">CVV</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="123"
+                    maxLength={4}
+                    value={cvv}
+                    onChange={(e) => setCvv(e.target.value)}
+                    className="w-full rounded-lg border border-[#D2D2D7] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#0071E3]/40"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isProcessing}
+                className="flex h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-[#0071E3] text-[16px] font-semibold text-white transition hover:bg-[#0077ED] disabled:opacity-60"
+              >
+                {isProcessing && <Spinner className="h-4 w-4" />}
+                Pay Now
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, clearCart, cartTotal, cartCount } = useCart()
   const { isAuthenticated, user } = useAuth()
   const navigate = useNavigate()
 
-  const [isCheckingOut, setIsCheckingOut] = useState(false)
-  const [error, setError] = useState('')
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [checkoutSnapshot, setCheckoutSnapshot] = useState(null)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [paymentError, setPaymentError] = useState('')
+  const [successOrder, setSuccessOrder] = useState(null)
 
-  const handleCheckout = async () => {
-    setError('')
+  const handleOpenPayment = () => {
     if (!isAuthenticated) {
       navigate('/login', { state: { from: '/cart' } })
       return
     }
+    setCheckoutSnapshot({ items: cart, total: cartTotal })
+    setPaymentError('')
+    setSuccessOrder(null)
+    setShowPaymentModal(true)
+  }
 
-    setIsCheckingOut(true)
+  const handleClosePayment = () => {
+    setShowPaymentModal(false)
+    setCheckoutSnapshot(null)
+    setPaymentError('')
+    setSuccessOrder(null)
+  }
+
+  const handlePayNow = async () => {
+    if (!checkoutSnapshot) return
+    setPaymentError('')
+    setIsProcessing(true)
     try {
-      const items = cart.map(({ product_id, product_name, quantity, unit_price }) => ({
+      const items = checkoutSnapshot.items.map(({ product_id, product_name, quantity, unit_price }) => ({
         product_id,
         product_name,
         quantity,
         unit_price,
       }))
       const order = await createOrder(user.id, items)
+      setSuccessOrder(order)
       clearCart()
-      navigate(`/orders`, { state: { justPlacedOrderId: order?.id } })
     } catch (err) {
-      setError(
+      setPaymentError(
         err?.response?.data?.detail ||
           err?.response?.data?.message ||
-          'Could not complete checkout. Please try again.',
+          'Could not complete payment. Please try again.',
       )
     } finally {
-      setIsCheckingOut(false)
+      setIsProcessing(false)
     }
   }
 
-  if (cart.length === 0) {
+  const handleViewOrders = () => {
+    const orderId = successOrder?.id
+    setShowPaymentModal(false)
+    setCheckoutSnapshot(null)
+    setSuccessOrder(null)
+    navigate('/orders', { state: { justPlacedOrderId: orderId } })
+  }
+
+  if (cart.length === 0 && !showPaymentModal) {
     return (
       <div className="mx-auto max-w-[1200px] px-6 py-24 text-center">
         <CartEmptyIcon />
@@ -82,10 +247,6 @@ export default function CartPage() {
   return (
     <div className="mx-auto max-w-[1200px] px-12 pb-20 pt-6">
       <h1 className="pb-6 text-[32px] font-bold text-[#1D1D1F]">Your Cart</h1>
-
-      {error && (
-        <div className="mb-6 rounded-lg bg-[#FF3B30]/10 px-4 py-3 text-sm text-[#FF3B30]">{error}</div>
-      )}
 
       <div className="grid grid-cols-1 gap-12 lg:grid-cols-[65%_35%]">
         <div>
@@ -150,11 +311,10 @@ export default function CartPage() {
             <span>${cartTotal.toFixed(2)}</span>
           </div>
           <button
-            onClick={handleCheckout}
-            disabled={isCheckingOut}
+            onClick={handleOpenPayment}
             className="h-[52px] w-full rounded-xl bg-[#0071E3] text-[17px] font-semibold text-white transition hover:bg-[#0077ED] disabled:opacity-60"
           >
-            {isCheckingOut ? 'Placing order...' : 'Proceed to Checkout'}
+            Make Payment
           </button>
           <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-[#6E6E73]">
             <LockIcon /> Secure checkout
@@ -164,6 +324,19 @@ export default function CartPage() {
           </Link>
         </div>
       </div>
+
+      {showPaymentModal && checkoutSnapshot && (
+        <PaymentModal
+          items={checkoutSnapshot.items}
+          total={checkoutSnapshot.total}
+          isProcessing={isProcessing}
+          error={paymentError}
+          successOrder={successOrder}
+          onClose={handleClosePayment}
+          onPayNow={handlePayNow}
+          onViewOrders={handleViewOrders}
+        />
+      )}
     </div>
   )
 }

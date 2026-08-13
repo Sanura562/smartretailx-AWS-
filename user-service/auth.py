@@ -15,7 +15,7 @@ from fastapi.security import OAuth2PasswordBearer
 # ============================================================
 SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-secret-change-in-production")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
 
 # bcrypt is the industry-standard hashing algorithm for passwords -
 # it's slow on purpose (resistant to brute force) and includes a salt automatically

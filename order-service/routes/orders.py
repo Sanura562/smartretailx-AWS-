@@ -68,6 +68,16 @@ def create_order(
     return order
 
 
+@router.get("", response_model=List[OrderResponse])
+def get_all_orders(
+    db: Session = Depends(get_db),
+    payload: dict = Depends(require_admin)
+):
+    """Get all orders - admin only"""
+    orders = db.query(Order).order_by(Order.created_at.desc()).all()
+    return orders
+
+
 @router.get("/user/{user_id}", response_model=List[OrderResponse])
 def list_orders_for_user(
     user_id: int,
