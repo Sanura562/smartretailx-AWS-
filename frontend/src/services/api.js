@@ -1,11 +1,27 @@
 import axios from 'axios'
 
 // Base axios instances for each service
-const userApi = axios.create({ baseURL: 'http://localhost:8001' })
-const productApi = axios.create({ baseURL: 'http://localhost:8002' })
-const inventoryApi = axios.create({ baseURL: 'http://localhost:8003' })
-const orderApi = axios.create({ baseURL: 'http://localhost:8004' })
-const notificationApi = axios.create({ baseURL: 'http://localhost:8005' })
+// const userApi = axios.create({ baseURL: 'http://localhost:8001' })
+// const productApi = axios.create({ baseURL: 'http://localhost:8002' })
+// const inventoryApi = axios.create({ baseURL: 'http://localhost:8003' })
+// const orderApi = axios.create({ baseURL: 'http://localhost:8004' })
+// const notificationApi = axios.create({ baseURL: 'http://localhost:8005' })
+
+const userApi = axios.create({
+  baseURL: 'http://smartretailx-alb-482384318.ap-southeast-1.elb.amazonaws.com',
+})
+const productApi = axios.create({
+  baseURL: 'http://smartretailx-alb-482384318.ap-southeast-1.elb.amazonaws.com',
+})
+const inventoryApi = axios.create({
+  baseURL: 'http://smartretailx-alb-482384318.ap-southeast-1.elb.amazonaws.com',
+})
+const orderApi = axios.create({
+  baseURL: 'http://smartretailx-alb-482384318.ap-southeast-1.elb.amazonaws.com',
+})
+const notificationApi = axios.create({
+  baseURL: 'http://smartretailx-alb-482384318.ap-southeast-1.elb.amazonaws.com',
+})
 
 // Attach Authorization header to every authenticated service.
 // userApi is intentionally excluded since register/login happen before a token exists.
@@ -120,7 +136,9 @@ export async function getAllUsers() {
 }
 
 export async function updateOrderStatus(orderId, status) {
-  const { data } = await orderApi.put(`/api/v1/orders/${orderId}/status`, { status })
+  const { data } = await orderApi.put(`/api/v1/orders/${orderId}/status`, {
+    status,
+  })
   return data
 }
 
@@ -130,7 +148,9 @@ export async function getAllOrders() {
 }
 
 export async function updateInventory(productId, quantity) {
-  const { data } = await inventoryApi.put(`/api/v1/inventory/${productId}`, { quantity })
+  const { data } = await inventoryApi.put(`/api/v1/inventory/${productId}`, {
+    quantity,
+  })
   return data
 }
 
@@ -140,7 +160,10 @@ export async function deleteProduct(productId) {
 }
 
 export async function updateProduct(productId, productData) {
-  const { data } = await productApi.put(`/api/v1/products/${productId}`, productData)
+  const { data } = await productApi.put(
+    `/api/v1/products/${productId}`,
+    productData
+  )
   return data
 }
 

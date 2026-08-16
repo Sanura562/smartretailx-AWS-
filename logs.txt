@@ -1,0 +1,8 @@
+﻿aws : 
+At line:5 char:1
++ aws logs get-log-events --log-group-name /smartretailx --log-stream-n ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+aws: [ERROR]: 'charmap' codec can't encode character '\u23f3' in position 900: character maps to <undefined>
