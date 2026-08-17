@@ -8,19 +8,19 @@ import axios from 'axios'
 // const notificationApi = axios.create({ baseURL: 'http://localhost:8005' })
 
 const userApi = axios.create({
-  baseURL: 'http://smartretailx-alb-482384318.ap-southeast-1.elb.amazonaws.com',
+  baseURL: 'https://d2ra07bab8st3h.cloudfront.net',
 })
 const productApi = axios.create({
-  baseURL: 'http://smartretailx-alb-482384318.ap-southeast-1.elb.amazonaws.com',
+  baseURL: 'https://d2ra07bab8st3h.cloudfront.net',
 })
 const inventoryApi = axios.create({
-  baseURL: 'http://smartretailx-alb-482384318.ap-southeast-1.elb.amazonaws.com',
+  baseURL: 'https://d2ra07bab8st3h.cloudfront.net',
 })
 const orderApi = axios.create({
-  baseURL: 'http://smartretailx-alb-482384318.ap-southeast-1.elb.amazonaws.com',
+  baseURL: 'https://d2ra07bab8st3h.cloudfront.net',
 })
 const notificationApi = axios.create({
-  baseURL: 'http://smartretailx-alb-482384318.ap-southeast-1.elb.amazonaws.com',
+  baseURL: 'https://d2ra07bab8st3h.cloudfront.net',
 })
 
 // Attach Authorization header to every authenticated service.

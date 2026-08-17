@@ -18,37 +18,36 @@ def health_check():
     return {"status": "healthy", "service": "order-service"}
 
 
+@router.get("", response_model=List[OrderResponse])
+def get_all_orders(
+    db: Session = Depends(get_db),
+    payload: dict = Depends(require_admin)
+):
+    """Get all orders - admin only"""
+    orders = db.query(Order).options(joinedload(Order.items)).order_by(Order.created_at.desc()).all()
+    return orders
+
+
 @router.post("", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
 def create_order(
     order_in: OrderCreate,
     db: Session = Depends(get_db),
     payload: dict = Depends(decode_access_token)
 ):
-    """
-    Places a new order.
-    1. Confirms every product in the order actually exists (Product Service).
-    2. Reduces stock for every item (Inventory Service) - fails the whole
-       order if any item doesn't have enough stock.
-    3. Persists the Order + OrderItems.
-    4. Publishes an order-created event (SQS in production).
-    """
     if not order_in.items:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Order must contain at least one item")
 
-    # Step 1: confirm every product exists
     for item in order_in.items:
         get_product(item.product_id)
 
-    # Step 2: reduce stock for every item (raises if insufficient stock anywhere)
     for item in order_in.items:
         check_and_reduce_stock(item.product_id, item.quantity)
 
-    # Step 3: persist the order
     total_amount = sum(item.quantity * item.unit_price for item in order_in.items)
 
     order = Order(user_id=order_in.user_id, status="pending", total_amount=total_amount)
     db.add(order)
-    db.flush()  # get order.id before committing, so we can attach items
+    db.flush()
 
     for item in order_in.items:
         db.add(OrderItem(
@@ -62,20 +61,9 @@ def create_order(
     db.commit()
     db.refresh(order)
 
-    # Step 4: publish order-created event
     publish_order_event(order.id, order.user_id, order.total_amount, order.status)
 
     return order
-
-
-@router.get("", response_model=List[OrderResponse])
-def get_all_orders(
-    db: Session = Depends(get_db),
-    payload: dict = Depends(require_admin)
-):
-    """Get all orders - admin only"""
-    orders = db.query(Order).order_by(Order.created_at.desc()).all()
-    return orders
 
 
 @router.get("/user/{user_id}", response_model=List[OrderResponse])
@@ -84,7 +72,6 @@ def list_orders_for_user(
     db: Session = Depends(get_db),
     payload: dict = Depends(decode_access_token)
 ):
-    """Lists all orders placed by a given user."""
     orders = db.query(Order).options(joinedload(Order.items)).filter(Order.user_id == user_id).all()
     return orders
 
@@ -95,7 +82,6 @@ def get_order(
     db: Session = Depends(get_db),
     payload: dict = Depends(decode_access_token)
 ):
-    """Gets a single order along with its line items."""
     order = db.query(Order).options(joinedload(Order.items)).filter(Order.id == order_id).first()
     if not order:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
@@ -109,7 +95,6 @@ def update_order_status(
     db: Session = Depends(get_db),
     payload: dict = Depends(require_admin)
 ):
-    """Updates an order's status. Admin only."""
     if status_update.status not in VALID_STATUSES:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

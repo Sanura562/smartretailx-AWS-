@@ -1,12 +1,15 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { getProducts, getCategories, searchProducts } from '../services/api'
 import { useCart } from '../context/CartContext'
+import hero1 from '../assets/Group 1.jpg'
+import hero2 from '../assets/Group 2.jpg'
+import hero3 from '../assets/Group 3.jpg'
 
 const PLACEHOLDER_IMAGE =
   'data:image/svg+xml;utf8,' +
   encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><rect width="400" height="400" fill="#F5F5F7"/><path d="M120 260l50-60 40 45 60-80 70 95H120z" fill="#D2D2D7"/><circle cx="150" cy="150" r="30" fill="#D2D2D7"/></svg>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><rect width="400" height="400" fill="#F5F5F7"/><path d="M120 260l50-60 40 45 60-80 70 95H120z" fill="#D2D2D7"/><circle cx="150" cy="150" r="30" fill="#D2D2D7"/></svg>`
   )
 
 const HERO_SLIDES = [
@@ -14,22 +17,19 @@ const HERO_SLIDES = [
     title: 'The future of retail.',
     subtitle: 'Premium electronics, curated for you.',
     cta: 'Shop Now',
-    gradient: 'from-blue-500 to-purple-600',
-    imageLabel: 'Hero Image 1',
+    imageUrl: hero1,
   },
   {
     title: 'Precision Engineered.',
     subtitle: 'Every detail matters.',
     cta: 'Explore',
-    gradient: 'from-gray-500 to-black',
-    imageLabel: 'Hero Image 2',
+    imageUrl: hero2,
   },
   {
     title: 'New Arrivals.',
     subtitle: 'The latest in tech.',
     cta: 'View Collection',
-    gradient: 'from-indigo-500 to-teal-500',
-    imageLabel: 'Hero Image 3',
+    imageUrl: hero3,
   },
 ]
 
@@ -53,11 +53,16 @@ function HeroSlider() {
         <div
           key={slide.title}
           className="absolute inset-0 transition-opacity duration-500 ease-in-out"
-          style={{ opacity: i === index ? 1 : 0, pointerEvents: i === index ? 'auto' : 'none' }}
+          style={{
+            opacity: i === index ? 1 : 0,
+            pointerEvents: i === index ? 'auto' : 'none',
+          }}
         >
           <div className="mx-auto grid h-full max-w-[1200px] grid-cols-1 items-center gap-12 px-6 md:grid-cols-2">
             <div>
-              <h1 className="text-[56px] font-bold leading-[1.05] text-[#1D1D1F]">{slide.title}</h1>
+              <h1 className="text-[56px] font-bold leading-[1.05] text-[#1D1D1F]">
+                {slide.title}
+              </h1>
               <p className="mt-4 text-xl text-[#6E6E73]">{slide.subtitle}</p>
               <button
                 onClick={scrollToProducts}
@@ -66,17 +71,21 @@ function HeroSlider() {
                 {slide.cta}
               </button>
             </div>
-            <div
-              className={`hidden h-[420px] w-full items-center justify-center rounded-2xl bg-gradient-to-br ${slide.gradient} text-lg font-medium text-white/90 md:flex`}
-            >
-              {slide.imageLabel}
+            <div className="hidden h-[420px] w-full overflow-hidden rounded-2xl md:flex">
+              <img
+                src={slide.imageUrl}
+                alt={slide.title}
+                className="h-full w-full object-cover"
+              />
             </div>
           </div>
         </div>
       ))}
 
       <button
-        onClick={() => setIndex((i) => (i - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
+        onClick={() =>
+          setIndex((i) => (i - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)
+        }
         aria-label="Previous slide"
         className="absolute left-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-lg text-[#1D1D1F] shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition hover:bg-white"
       >
@@ -145,7 +154,9 @@ function ProductCard({ product, onAddToCart }) {
         >
           {product.name}
         </Link>
-        <p className="text-lg font-bold text-[#1D1D1F]">${Number(product.price).toFixed(2)}</p>
+        <p className="text-lg font-bold text-[#1D1D1F]">
+          ${Number(product.price).toFixed(2)}
+        </p>
         <button
           onClick={() => onAddToCart(product)}
           className="mt-4 h-10 w-full rounded-lg bg-[#0071E3] text-sm font-medium text-white opacity-100 transition-all duration-200 hover:bg-[#0077ED] md:translate-y-2 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100"
@@ -172,13 +183,14 @@ export default function HomePage() {
 
   useEffect(() => {
     getCategories()
-      .then((data) => setCategories(Array.isArray(data) ? data : (data?.categories ?? [])))
+      .then((data) =>
+        setCategories(Array.isArray(data) ? data : (data?.categories ?? []))
+      )
       .catch(() => setCategories([]))
   }, [])
 
   useEffect(() => {
     let cancelled = false
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset loading state for new search/filter
     setIsLoading(true)
     setError('')
 
@@ -188,10 +200,12 @@ export default function HomePage() {
 
     fetchProducts
       .then((data) => {
-        if (!cancelled) setProducts(Array.isArray(data) ? data : (data?.products ?? []))
+        if (!cancelled)
+          setProducts(Array.isArray(data) ? data : (data?.products ?? []))
       })
       .catch(() => {
-        if (!cancelled) setError('Unable to load products right now. Please try again later.')
+        if (!cancelled)
+          setError('Unable to load products right now. Please try again later.')
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false)
@@ -252,14 +266,19 @@ export default function HomePage() {
         <div className="mb-6 flex items-end justify-between">
           <h2 className="text-2xl font-bold text-[#1D1D1F]">{title}</h2>
           {showViewAll && (
-            <button onClick={handleViewAll} className="text-sm font-medium text-[#0071E3] hover:underline">
+            <button
+              onClick={handleViewAll}
+              className="text-sm font-medium text-[#0071E3] hover:underline"
+            >
               View all
             </button>
           )}
         </div>
 
         {error && (
-          <div className="mb-6 rounded-lg bg-[#FF3B30]/10 px-4 py-3 text-sm text-[#FF3B30]">{error}</div>
+          <div className="mb-6 rounded-lg bg-[#FF3B30]/10 px-4 py-3 text-sm text-[#FF3B30]">
+            {error}
+          </div>
         )}
 
         {isLoading ? (
@@ -270,13 +289,21 @@ export default function HomePage() {
           </div>
         ) : products.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-[#D2D2D7] py-16 text-center">
-            <p className="text-lg font-medium text-[#1D1D1F]">No products found</p>
-            <p className="mt-1 text-sm text-[#6E6E73]">Try a different search term or category.</p>
+            <p className="text-lg font-medium text-[#1D1D1F]">
+              No products found
+            </p>
+            <p className="mt-1 text-sm text-[#6E6E73]">
+              Try a different search term or category.
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {products.map((product) => (
-              <ProductCard key={product.id} product={product} onAddToCart={addToCart} />
+              <ProductCard
+                key={product.id}
+                product={product}
+                onAddToCart={addToCart}
+              />
             ))}
           </div>
         )}
