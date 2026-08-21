@@ -11,7 +11,7 @@ class SmartRetailXUser(HttpUser):
         """Login before running tasks"""
         response = self.client.post("/api/v1/users/login", json={
             "email": "superadmin@test.com",
-            "password": "Admin@123456"
+            "password": "admin123"
         })
         if response.status_code == 200:
             data = response.json()
@@ -54,3 +54,6 @@ class SmartRetailXUser(HttpUser):
     def get_orders(self):
         """View orders"""
         self.client.get("/api/v1/orders", headers=self.auth_headers())
+
+
+

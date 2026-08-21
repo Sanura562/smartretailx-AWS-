@@ -1,3 +1,1 @@
 Method,Name,Error,Occurrences,First Seen,Last Seen
-GET,/api/v1/orders,HTTPError('401 Client Error: Unauthorized for url: /api/v1/orders'),76,2026-08-17T18:13:08Z,2026-08-17T18:14:54Z
-POST,/api/v1/users/login,HTTPError('401 Client Error: Unauthorized for url: /api/v1/users/login'),20,2026-08-17T18:13:01Z,2026-08-17T18:13:26Z
