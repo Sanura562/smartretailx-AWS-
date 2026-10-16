@@ -1,4 +1,9 @@
 import axios from 'axios'
+import * as demo from './demoApi'
+
+// Demo mode (VITE_DEMO_MODE=true at build time): serve built-in sample data
+// instead of calling the backend. See demoApi.js.
+const DEMO = import.meta.env.VITE_DEMO_MODE === 'true'
 
 // Base axios instances for each service
 // const userApi = axios.create({ baseURL: 'http://localhost:8001' })
@@ -43,6 +48,7 @@ const attachAuthInterceptor = (instance) => {
 // ---------- User Service ----------
 
 export async function registerUser(email, password, fullName) {
+  if (DEMO) return demo.registerUser(email, password, fullName)
   const { data } = await userApi.post('/api/v1/users/register', {
     email,
     password,
@@ -52,6 +58,7 @@ export async function registerUser(email, password, fullName) {
 }
 
 export async function loginUser(email, password) {
+  if (DEMO) return demo.loginUser(email, password)
   const { data } = await userApi.post('/api/v1/users/login', {
     email,
     password,
@@ -62,6 +69,7 @@ export async function loginUser(email, password) {
 // ---------- Product Service ----------
 
 export async function getProducts(category) {
+  if (DEMO) return demo.getProducts(category)
   const { data } = await productApi.get('/api/v1/products', {
     params: category ? { category } : undefined,
   })
@@ -69,6 +77,7 @@ export async function getProducts(category) {
 }
 
 export async function searchProducts(q) {
+  if (DEMO) return demo.searchProducts(q)
   const { data } = await productApi.get('/api/v1/products/search', {
     params: { q },
   })
@@ -76,11 +85,13 @@ export async function searchProducts(q) {
 }
 
 export async function getProduct(id) {
+  if (DEMO) return demo.getProduct(id)
   const { data } = await productApi.get(`/api/v1/products/${id}`)
   return data
 }
 
 export async function getCategories() {
+  if (DEMO) return demo.getCategories()
   const { data } = await productApi.get('/api/v1/products/categories')
   return data
 }
@@ -88,6 +99,7 @@ export async function getCategories() {
 // ---------- Inventory Service ----------
 
 export async function getInventory(productId) {
+  if (DEMO) return demo.getInventory(productId)
   const { data } = await inventoryApi.get(`/api/v1/inventory/${productId}`)
   return data
 }
@@ -95,6 +107,7 @@ export async function getInventory(productId) {
 // ---------- Order Service ----------
 
 export async function createOrder(userId, items) {
+  if (DEMO) return demo.createOrder(userId, items)
   const { data } = await orderApi.post('/api/v1/orders', {
     user_id: userId,
     items,
@@ -103,11 +116,13 @@ export async function createOrder(userId, items) {
 }
 
 export async function getOrder(orderId) {
+  if (DEMO) return demo.getOrder(orderId)
   const { data } = await orderApi.get(`/api/v1/orders/${orderId}`)
   return data
 }
 
 export async function getUserOrders(userId) {
+  if (DEMO) return demo.getUserOrders(userId)
   const { data } = await orderApi.get(`/api/v1/orders/user/${userId}`)
   return data
 }
@@ -115,6 +130,7 @@ export async function getUserOrders(userId) {
 // ---------- Notification Service ----------
 
 export async function getNotifications(userId) {
+  if (DEMO) return demo.getNotifications(userId)
   const { data } = await notificationApi.get(
     `/api/v1/notifications/user/${userId}`
   )
@@ -122,6 +138,7 @@ export async function getNotifications(userId) {
 }
 
 export async function markNotificationRead(notificationId) {
+  if (DEMO) return demo.markNotificationRead(notificationId)
   const { data } = await notificationApi.patch(
     `/api/v1/notifications/${notificationId}/read`
   )
@@ -131,11 +148,13 @@ export async function markNotificationRead(notificationId) {
 // ---------- Admin ----------
 
 export async function getAllUsers() {
+  if (DEMO) return demo.getAllUsers()
   const { data } = await userApi.get('/api/v1/users/all')
   return data
 }
 
 export async function updateOrderStatus(orderId, status) {
+  if (DEMO) return demo.updateOrderStatus(orderId, status)
   const { data } = await orderApi.put(`/api/v1/orders/${orderId}/status`, {
     status,
   })
@@ -143,11 +162,13 @@ export async function updateOrderStatus(orderId, status) {
 }
 
 export async function getAllOrders() {
+  if (DEMO) return demo.getAllOrders()
   const { data } = await orderApi.get('/api/v1/orders')
   return data
 }
 
 export async function updateInventory(productId, quantity) {
+  if (DEMO) return demo.updateInventory(productId, quantity)
   const { data } = await inventoryApi.put(`/api/v1/inventory/${productId}`, {
     quantity,
   })
@@ -155,11 +176,13 @@ export async function updateInventory(productId, quantity) {
 }
 
 export async function deleteProduct(productId) {
+  if (DEMO) return demo.deleteProduct(productId)
   const { data } = await productApi.delete(`/api/v1/products/${productId}`)
   return data
 }
 
 export async function updateProduct(productId, productData) {
+  if (DEMO) return demo.updateProduct(productId, productData)
   const { data } = await productApi.put(
     `/api/v1/products/${productId}`,
     productData
@@ -168,16 +191,19 @@ export async function updateProduct(productId, productData) {
 }
 
 export async function createProduct(productData) {
+  if (DEMO) return demo.createProduct(productData)
   const { data } = await productApi.post('/api/v1/products', productData)
   return data
 }
 
 export async function getLowStock() {
+  if (DEMO) return demo.getLowStock()
   const { data } = await inventoryApi.get('/api/v1/inventory/low-stock')
   return data
 }
 
 export async function createInventory(inventoryData) {
+  if (DEMO) return demo.createInventory(inventoryData)
   const { data } = await inventoryApi.post('/api/v1/inventory', inventoryData)
   return data
 }
